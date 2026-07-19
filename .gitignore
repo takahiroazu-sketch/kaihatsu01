@@ -1,0 +1,35 @@
+# Privacy and safety first
+.DS_Store
+.claude/
+.env*
+*.pem
+*.key
+*.p12
+*.sqlite
+*.db
+
+# Local build and cache artifacts
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+__pycache__/
+*.pyc
+*.log
+
+# Sensitive or generated content
+**/data/
+**/output/
+**/output*/
+**/*.pdf
+**/*.csv
+**/*.xlsx
+**/*.xls
+**/*.jsonl
+
+# Large or local-only files
+*.bak
+*.tmp
+*.swp
