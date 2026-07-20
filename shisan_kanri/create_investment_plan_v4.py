@@ -40,19 +40,20 @@ BORDER = '#C8C4BE'
 RAKUTEN= '#BF0000'
 
 # ── データ（v2と同一） ────────────────────────────────────────────
-jp_stock_total  = 12934193.5 + 1726200 + 731000
-jp_stock_profit = 5827639.5  + 126600  + 302700
+jp_stock_total  = 14042946 + 1786550 + 715700
+jp_stock_profit = 6273496  + 186950  + 287400
 jp_stock_cost   = jp_stock_total - jp_stock_profit
-jp_fund_total   = 4253472 + 3362294
-jp_fund_profit  = 1140708 + 1062254
+jp_fund_total   = 4301834 + 3400523
+jp_fund_profit  = 1189070 + 1100483
 jp_fund_cost    = jp_fund_total - jp_fund_profit
-us_tokutei_total  = 15952003; us_tokutei_profit = 9228213
-us_nisa_total     = 2061994;  us_nisa_profit    = 562872
-us_old_nisa_total = 2656243;  us_old_nisa_profit = 2293993
+us_tokutei_total  = 15916308; us_tokutei_profit = 9192518
+us_nisa_total     = 2169655;  us_nisa_profit    = 670533
+# SKYT(旧NISA)は2026/7中に450株を全株売却済み(円貨決済・約230万円を現金化)
+us_old_nisa_total = 0;        us_old_nisa_profit = 0
 us_stock_total    = us_tokutei_total + us_nisa_total + us_old_nisa_total
 us_stock_profit   = us_tokutei_profit + us_nisa_profit + us_old_nisa_profit
-us_bond_total     = 7170124
-sbi_usd_cash      = 1_880_000; sbi_jpy_cash = 1_200_000
+us_bond_total     = 7215878
+sbi_usd_cash      = 1_880_000; sbi_jpy_cash = 3_500_000  # SKYT売却代金 約230万円を現金化して反映
 SBI_CASH_TOTAL    = sbi_usd_cash + sbi_jpy_cash
 SBI_TOTAL         = jp_stock_total + jp_fund_total + us_stock_total + us_bond_total + SBI_CASH_TOTAL
 
@@ -87,7 +88,7 @@ def new_page(label='', title='', insight=''):
     f = fig.add_axes([0, 0, 1, 0.075])
     f.set_facecolor(FOOTER); f.axis('off')
     f.set_xlim(0,1); f.set_ylim(0,1)
-    f.text(0.04, 0.45, '個人投資プラン提案書  SBI証券 ／ 楽天証券  2026年6月21日',
+    f.text(0.04, 0.45, '個人投資プラン提案書  SBI証券 ／ 楽天証券  2026年7月19日',
            color='#909090', fontsize=8, va='center')
     f.text(0.96, 0.45, str(_PN[0]), color='#D0D0D0', fontsize=11,
            fontweight='bold', ha='right', va='center')
@@ -143,7 +144,7 @@ def s1_cover():
 
     fig.text(0.46, 0.82, '投資プラン', fontsize=28, fontweight='bold', color=TEXT)
     fig.text(0.46, 0.73, '提案書', fontsize=28, fontweight='bold', color=TEXT)
-    fig.text(0.46, 0.63, 'SBI証券 ／ 楽天証券 ／ 現金\n2026年6月21日 最新データ反映版',
+    fig.text(0.46, 0.63, 'SBI証券 ／ 楽天証券 ／ 現金\n2026年7月19日 最新データ反映版',
              fontsize=12, color=TEXT2)
     kpis = [
         (f"{GRAND_TOTAL/1e8:.2f}億円",   '総資産（3口座合算）', TEAL),
@@ -161,7 +162,7 @@ def s1_cover():
              fontsize=9, color=TEXT2)
     f = fig.add_axes([0,0,1,0.075]); f.set_facecolor(FOOTER); f.axis('off')
     f.set_xlim(0,1); f.set_ylim(0,1)
-    f.text(0.5,0.45,'個人投資プラン提案書  2026年6月21日',
+    f.text(0.5,0.45,'個人投資プラン提案書  2026年7月19日',
            ha='center',color='#909090',fontsize=8,va='center')
     f.text(0.96,0.45,'1',color='#D0D0D0',fontsize=11,fontweight='bold',ha='right',va='center')
     return fig
@@ -285,7 +286,7 @@ def s3_rakuten():
 
     pts = [
         (RAKUTEN, '楽天VTI  +152.3%',
-         'SBI内VTI(特定160株 +75%)と合わせ全米株式に約1,900万円集中。要注意。'),
+         'SBI内VTI(特定180株 +73%)と合わせ全米株式に約1,792万円集中。要注意。'),
         (AMBER,   'スペースX (SPCX)  +37.9%',
          '宇宙産業・通信衛星リーダー。上場直後の成長株として継続保有。'),
     ]
@@ -311,8 +312,8 @@ def s4_swot():
     strengths = [
         ('超高い含み益バッファー',
          f"総含み益+{GRAND_PROFIT/1e4:.0f}万円（+{GRAND_RATE:.0f}%）。急落局面でも心理的余裕がある"),
-        ('現金・預り金1,208万円の余力',
-         'SBI預り金308万＋SBI外現金900万円。投資機会・急落局面に即対応できる'),
+        ('現金・預り金1,438万円の余力',
+         'SBI預り金538万（SKYT売却分約230万円含む）＋SBI外現金900万円。投資機会・急落局面に即対応できる'),
         ('インデックス×個別株の2軸',
          '楽天VTI・SBI eMAXIS Slim・VTIで全市場に連動しつつ個別株で超過収益'),
         ('NISA非課税の活用',
@@ -322,13 +323,13 @@ def s4_swot():
     ]
     challenges = [
         ('VTI系への集中リスク',
-         '楽天VTI + SBI VTI(特定160株) = 約1,900万円。全体の28%超が集中'),
+         '楽天VTI + SBI VTI(特定180株) = 約1,792万円。全体の25%超が集中'),
         ('米国資産の為替リスク',
-         '米国株+債券+楽天SPCX = 約2,874万円。円高150円で約254万円相当の損失'),
+         '米国株+債券+楽天SPCX = 約2,539万円。円高150円で約188万円相当の損失'),
         ('日銀利上げの継続',
          '1.0%到達後も追加利上げ見込み。NTT・KDDI等の高配当株に逆風'),
         ('現金の機会損失',
-         'SBI外900万＋SBI預り金308万が低利運用。個人向け国債等で少なくとも0.5%以上狙える'),
+         'SBI外900万＋SBI預り金538万が低利運用。個人向け国債等で少なくとも0.5%以上狙える'),
         ('中東地政学リスク',
          'ホルムズ海峡リスク継続。原油輸入95%を中東依存の日本株に影響'),
     ]
@@ -417,11 +418,11 @@ def s6_plan_a():
     ax.set_facecolor(BG); ax.set_xlim(0,1); ax.set_ylim(0,1); ax.axis('off')
 
     actions = [
-        ('SELL', NEG,    '三井物産（8031）',         '200株 ／ +143万確定。+239%達成済み、高値圏での部分利益確定'),
+        ('SELL', NEG,    '三井物産（8031）',         '200株 ／ +65万確定。+236%達成済み、高値圏での部分利益確定'),
         ('SELL', NEG,    '楽天VTI → 一部解約',       '200万円分。SBI VTIと合算で集中リスク解消。+152%の利益確定'),
         ('SELL', NEG,    'VTI（SBI特定）',            '80株。円高前にドルを円転。残100株は継続保有'),
-        ('SELL', NEG,    'SKYT（旧NISA）',            '200株。+578%の旧NISA株。一部確定で利益を守る'),
-        ('BUY',  POS,    '個人向け国債（変動10年）',  '現金270万円。日銀利上げで利回り上昇中。元本保証'),
+        ('DONE', TEAL,   'SKYT（旧NISA）売却済み',    '450株。円貨決済で約230万円を現金化し、SBI預り金に反映済み'),
+        ('BUY',  POS,    '個人向け国債（変動10年）',  '現金270万円＋SKYT売却分230万円の一部を充当。日銀利上げで利回り上昇中'),
         ('ADD',  BLUE1,  'NISA積立 増額',             '現金から月10万。eMAXIS Slim 積立継続・一括追加'),
         ('HOLD', TEXT2,  'その他全ポジション',         '現状維持。含み益のある銘柄はそのまま継続保有'),
     ]
@@ -526,7 +527,7 @@ def s8_plan_c():
     fig = new_page(
         label='プランC',
         title='プランC：攻め型・成長株追加型',
-        insight='現含み益+2,491万円がリスク緩衝材。現金600万円をAI・宇宙・半導体テーマへ分散投入'
+        insight='現含み益+2,327万円がリスク緩衝材。現金600万円をAI・宇宙・半導体テーマへ分散投入'
     )
     gs = gs_body(fig, 1, 2, wspace=0.35)
 
@@ -576,14 +577,14 @@ def s8_plan_c():
 # 9. プランD — 円高対応
 # ════════════════════════════════════════════════════════════════
 def s9_plan_d():
-    fx       = [159, 155, 152, 150, 146, 140]
-    us_total = 27840364   # 米国株+債券+楽天SPCX
-    diffs    = [(us_total*r/159 - us_total)/1e4 for r in fx]
+    fx       = [162, 158, 155, 153, 149, 143]
+    us_total = 25391368   # 米国株+債券+楽天SPCX
+    diffs    = [(us_total*r/162 - us_total)/1e4 for r in fx]
 
     fig = new_page(
         label='プランD',
         title='プランD：円高対応・国内回帰型',
-        insight='戦略の核心：米国資産2,874万円の為替リスクを段階的にヘッジ。現金900万円は全て円建て安全資産へ'
+        insight='戦略の核心：米国資産2,539万円の為替リスクを段階的にヘッジ。現金900万円は全て円建て安全資産へ'
     )
     gs = gs_body(fig, 1, 2, wspace=0.32)
 
@@ -600,8 +601,8 @@ def s9_plan_d():
                  f'{d:+.0f}万', ha='center', fontsize=9, fontweight='bold',
                  color=(POS if d>=0 else NEG))
     ax1.axvline(2.5, color=TEXT2, lw=1.2, ls='--', alpha=0.6)
-    ax1.text(2.6, min(diffs)*0.5, '年末予想\n152.5円付近', fontsize=8.5, color=TEXT2)
-    cstyle(ax1, '為替変動による米国資産（2,874万円）\n円換算損益シミュレーション')
+    ax1.text(2.6, min(diffs)*0.5, '年末予想\n154円付近', fontsize=8.5, color=TEXT2)
+    cstyle(ax1, '為替変動による米国資産（2,539万円）\n円換算損益シミュレーション')
 
     # 右: アクション一覧
     ax2 = fig.add_subplot(gs[0,1])
@@ -609,11 +610,11 @@ def s9_plan_d():
     ax2.set_title('実施アクション', fontsize=11, fontweight='bold', color=TEXT, pad=9, loc='left')
     d_acts = [
         ('SELL', NEG,    'VTI（SBI特定）段階売却',
-         '円高が進むたびに20〜30株ずつ。159→155→150円で3段階'),
+         '円高が進むたびに20〜30株ずつ。162→158→153円で3段階'),
         ('SELL', NEG,    '楽天VTI 一部解約（300万円）',
          '+152%の大幅益を一部確定。VTI系集中の解消にも有効'),
         ('SELL', NEG,    'AMBQ（SBI特定）全売却',
-         '取得比+178%。円高・ドル安前に全売却し利益確定'),
+         '取得比+107%。円高・ドル安前に全売却し利益確定'),
         ('BUY',  AMBER,  '国内金融株（三菱UFJ等）追加',
          '日銀利上げで銀行・保険は追い風。円高でも内需株は影響軽微'),
         ('BUY',  POS,    '個人向け国債（変動10年）全額',
@@ -757,12 +758,12 @@ def s11_timeline():
     disc = fig.add_axes([0.04, 0.078, 0.92, 0.025])
     disc.set_facecolor(ALTBG); disc.axis('off'); disc.set_xlim(0,1); disc.set_ylim(0,1)
     disc.text(0.5, 0.5,
-              '免責事項：本資料は2026年6月21日時点のデータに基づく情報提供を目的としたものであり、特定の投資を推奨するものではありません。投資判断は必ずご自身の責任においてご判断ください。',
+              '免責事項：本資料は2026年7月19日時点のデータに基づく情報提供を目的としたものであり、特定の投資を推奨するものではありません。投資判断は必ずご自身の責任においてご判断ください。',
               ha='center', va='center', fontsize=7.5, color=TEXT2)
     return fig
 
 # ── PDF出力 ─────────────────────────────────────────────────────
-OUT = "/Users/takahiroazuma/Desktop/kabu/claude/output/investment_plan_v4.pdf"
+OUT = "/Users/takahiroazuma/Desktop/kabu/claude/shisan_kanri/output/investment_plan_v4.pdf"
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
 slides = [s1_cover, s2_total_summary, s3_rakuten, s4_swot, s5_cash,

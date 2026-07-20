@@ -23,9 +23,15 @@ DATA_DIR = Path(__file__).parent / "data"
 
 
 def to_yahoo_ticker(code: str) -> str:
-    """4桁の証券コードをyfinance用ティッカー（例: 7203 -> 7203.T）に変換する。"""
+    """証券コード／ティッカーをyfinance用ティッカーに変換する。
+
+    数字のみ（日本株の証券コード、例: 7203）なら `.T` を付与する。
+    英字を含む場合（米国株のティッカー、例: VTI）やすでに `.` を含む場合はそのまま使う。
+    """
     code = code.strip().upper()
-    return code if "." in code else f"{code}.T"
+    if "." in code:
+        return code
+    return f"{code}.T" if code.isdigit() else code
 
 
 def fetch(code: str) -> dict:

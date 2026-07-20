@@ -176,6 +176,17 @@ def page_cover(footer_label, code, info, fundamentals, valuation, technical):
 def page_fundamentals(footer_label, fundamentals):
     timeline = fundamentals["timeline"]
     flags = fundamentals["trend_flags"]
+
+    if not timeline:
+        # ETF等、損益計算書データがyfinanceから取得できない銘柄向けのプレースホルダー。
+        fig = new_page(footer_label, label="ファンダメンタルズ分析", title="売上・利益・収益性の推移")
+        ax = fig.add_axes([0.04, 0.15, 0.92, 0.63])
+        ax.set_facecolor(BG)
+        ax.axis("off")
+        ax.text(0.5, 0.5, "この銘柄はETF等のため、損益計算書データはありません。",
+                fontsize=12, color=TEXT2, ha="center", va="center", transform=ax.transAxes)
+        return fig
+
     zoushu_zoueki = "増収増益" if flags["zoushu_zoueki"] else (
         ("増収" if flags["revenue_yoy_growth"] else "減収") + "・" +
         ("増益" if flags["net_income_yoy_growth"] else "減益")

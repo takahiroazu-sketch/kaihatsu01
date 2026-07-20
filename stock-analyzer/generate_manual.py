@@ -1,8 +1,9 @@
 """
 操作マニュアル生成
 
-一括生成(generate.py)・dashboard(generate_dashboard.py)・report(generate_pdf.py)・
-compare.py の使い方と出力内容をまとめたPDFマニュアルを生成する。承認済みPDFデザインスタイルを踏襲する。
+保有銘柄一覧からの一括解析(run_holdings.py)・マトリクスレポート(generate_matrix_report.py)・
+一括生成(generate.py)・dashboard(generate_dashboard.py)・report(generate_pdf.py)・compare.py の
+使い方と出力内容をまとめたPDFマニュアルを生成する。承認済みPDFデザインスタイルを踏襲する。
 
 使い方:
     python3 generate_manual.py
@@ -25,6 +26,7 @@ from dashboard.charts import BG, TEXT, TEXT2, TEAL, AMBER
 
 POS = "#2D8A50"
 PURPLE = "#8870CC"
+BLUE = "#4C7EBF"
 ALTBG = "#F5F2EE"
 HDRBG = "#D4D0CC"
 
@@ -72,22 +74,24 @@ def page_cover():
     fig.text(0.44, 0.60, f"バージョン: v1  ／  更新日: {VERSION_DATE}", fontsize=12, color=TEXT2, va="center")
 
     tools = [
-        ("一括生成（おすすめ）", "generate.py", "HTML+PDF", POS),
-        ("ダッシュボード", "generate_dashboard.py", "HTML", TEAL),
-        ("レポート", "generate_pdf.py", "PDF", AMBER),
-        ("複数銘柄比較", "compare.py", "HTML", PURPLE),
+        ("一括解析（おすすめ）", "run_holdings.py", "HTML+PDF", POS),
+        ("マトリクス比較（全銘柄一覧）", "generate_matrix_report.py", "PDF", BLUE),
+        ("コード指定で一括生成", "generate.py", "HTML+PDF", TEAL),
+        ("ダッシュボード（単体）", "generate_dashboard.py", "HTML", AMBER),
+        ("レポート（単体）", "generate_pdf.py", "PDF", PURPLE),
+        ("複数銘柄比較", "compare.py", "HTML", TEXT2),
     ]
     for i, (name, cmd, fmt, clr) in enumerate(tools):
-        ky = 0.48 - i * 0.085
-        fig.text(0.44, ky, name, fontsize=14, fontweight="bold", color=clr, va="center")
-        fig.text(0.68, ky, cmd, fontsize=11, color=TEXT, family="monospace", va="center")
-        fig.text(0.90, ky, fmt, fontsize=10.5, color=TEXT2, va="center")
+        ky = 0.51 - i * 0.065
+        fig.text(0.44, ky, name, fontsize=13, fontweight="bold", color=clr, va="center")
+        fig.text(0.68, ky, cmd, fontsize=10.5, color=TEXT, family="monospace", va="center")
+        fig.text(0.90, ky, fmt, fontsize=10, color=TEXT2, va="center")
 
-    div = fig.add_axes([0.44, 0.155, 0.52, 0.002])
+    div = fig.add_axes([0.44, 0.135, 0.52, 0.002])
     div.set_facecolor("#C8C4BE")
     div.axis("off")
 
-    fig.text(0.44, 0.12,
+    fig.text(0.44, 0.10,
               "本ツールはユーザーが指定した銘柄コードの分析結果を提示するものであり、\n"
               "ツール側から独自の銘柄推奨は行いません。投資判断はご自身の責任で行ってください。",
               fontsize=8.5, color=TEXT2, va="center")
@@ -109,8 +113,8 @@ def page_cover():
 # ══════════════════════════════════════════════════════════════
 def page_common():
     fig = new_page(FOOTER_LABEL, label="共通事項",
-                    title="この4つのツールに共通すること",
-                    insight="証券コード1つを渡すだけで、株価・財務データの取得から分析までを自動実行する")
+                    title="この6つのツールに共通すること",
+                    insight="証券コード（またはティッカー）を渡すだけで、データ取得から分析までを自動実行する")
     gs = gs_content(fig, 1, 2, wspace=0.35, top=0.78)
 
     ax1 = fig.add_subplot(gs[0, 0])
@@ -118,8 +122,9 @@ def page_common():
     ax1.axis("off")
     ax1.set_title("対象・前提", fontsize=11.5, fontweight="bold", color=TEXT, pad=10, loc="left")
     bullet_block(fig, 0.075, 0.685, [
-        "対象は日本株の証券コード（4桁、例: 7203）",
-        "内部で自動的に「.T」を付与してyfinanceから取得",
+        "日本株（4桁の証券コード、例: 7203）と米国株",
+        "  （ティッカー、例: VTI）の両方に対応",
+        "日本株は内部で自動的に「.T」を付与してyfinanceから取得",
         "データソースはyfinance（無料・登録不要）",
         "プロジェクトのルートフォルダ（stock-analyzer/）で",
         "  python3 コマンドを実行する",
@@ -146,16 +151,89 @@ def page_common():
         "存在しない証券コードを指定した場合はエラーメッセージが表示される",
         "  （generate.pyは他の正しいコードの処理を続行、compare.pyは処理を中断する）",
         "銀行株など業種によっては「営業利益」等の項目が算出できず「―」と表示される場合がある",
+        "米国ETF等、損益計算書が存在しない銘柄はファンダメンタルズ分析ページが空欄になる",
     ], fontsize=10.5)
 
     return fig
 
 
 # ══════════════════════════════════════════════════════════════
-# 3. 一括生成（おすすめ）
+# 3. 保有銘柄一覧からの一括解析（おすすめ）
+# ══════════════════════════════════════════════════════════════
+def page_holdings():
+    fig = new_page(FOOTER_LABEL, label="ツール1 / 6 ー 保有銘柄一覧からの一括解析（おすすめ）",
+                    title="holdings.csv + run_holdings.py",
+                    insight="保有銘柄一覧を編集するだけで、選択した銘柄をまとめて解析できる")
+    gs = gs_content(fig, 1, 1, top=0.78, bottom=0.30)
+
+    code_box(fig, 0.04, 0.66, 0.92, 0.09, [
+        "$ cd stock-analyzer",
+        "$ python3 run_holdings.py",
+    ])
+
+    fig.text(0.04, 0.615, "holdings.csv の列", fontsize=11, fontweight="bold", color=TEXT)
+    fig.text(0.04, 0.585,
+             "証券コード（日本株4桁） ／ ティッカー（米国株の場合のみ） ／ 銘柄名称 ／ 業種 ／ 選択（1=対象、0=対象外）",
+             fontsize=10, color=TEXT2)
+    fig.text(0.04, 0.56, "※ 銘柄名称・業種は表示用メモ欄で分析処理には使われない（空欄でも動作する）",
+             fontsize=9, color=TEXT2)
+
+    fig.text(0.04, 0.53, "動作の内容", fontsize=11, fontweight="bold", color=TEXT)
+    bullet_block(fig, 0.04, 0.49, [
+        "holdings.csv を読み込み、「選択」列が1の行だけを対象にする",
+        "ティッカー列が埋まっていれば米国株、空欄なら証券コードで日本株として扱う",
+        "対象銘柄ごとに generate.py と同じ処理（取得→3分析→HTML+PDF生成）を実行する",
+        "1銘柄が失敗しても残りは処理を続行し、最後に失敗した銘柄をまとめて表示する",
+    ], fontsize=10.5, line_gap=0.038)
+
+    fig.text(0.04, 0.235, "編集方法", fontsize=11, fontweight="bold", color=TEXT)
+    bullet_block(fig, 0.04, 0.20, [
+        "holdings.csv はテキストエディタ／Excel／Numbers等で直接編集できる（行の追加＝銘柄の追加）",
+        "一時的に対象から外したいだけなら、行を消さずに「選択」列を0にすればよい",
+    ], fontsize=10.5)
+
+    return fig
+
+
+# ══════════════════════════════════════════════════════════════
+# 3. マトリクスレポート（全銘柄横断比較）
+# ══════════════════════════════════════════════════════════════
+def page_matrix_report():
+    fig = new_page(FOOTER_LABEL, label="ツール2 / 6 ー マトリクスレポート（全銘柄横断比較）",
+                    title="generate_matrix_report.py",
+                    insight="保有銘柄すべての主要指標を1つの表に並べて見比べられるPDFを作る")
+    gs = gs_content(fig, 1, 1, top=0.78, bottom=0.30)
+
+    code_box(fig, 0.04, 0.66, 0.92, 0.09, [
+        "$ cd stock-analyzer",
+        "$ python3 generate_matrix_report.py",
+    ])
+
+    fig.text(0.04, 0.615, "出力先", fontsize=11, fontweight="bold", color=TEXT)
+    fig.text(0.04, 0.585, "output/holdings_matrix_report.pdf", fontsize=10, color=TEXT2)
+
+    fig.text(0.04, 0.53, "動作の内容", fontsize=11, fontweight="bold", color=TEXT)
+    bullet_block(fig, 0.04, 0.49, [
+        "holdings.csv の選択銘柄（run_holdings.pyと同じ対象）をすべて取得・分析する",
+        "表紙1ページ＋指標マトリクス表（銘柄・業種・コード・株価・PER・PBR・配当利回り・ROE・直近クロス）",
+        "銘柄数が多い場合は1ページ20行を目安に自動でページを分割する",
+    ], fontsize=10.5, line_gap=0.038)
+
+    fig.text(0.04, 0.30, "run_holdings.py との違い", fontsize=11, fontweight="bold", color=TEXT)
+    bullet_block(fig, 0.04, 0.255, [
+        "run_holdings.pyは銘柄ごとに詳しいダッシュボード/レポートを個別に作る",
+        "generate_matrix_report.pyは全銘柄を1つの表にまとめ、指標を横断的に見比べるためのもの",
+        "保有銘柄を追加・削除した際は、両方を再実行して内容を揃えること",
+    ], fontsize=10.5, line_gap=0.038)
+
+    return fig
+
+
+# ══════════════════════════════════════════════════════════════
+# 4. 一括生成（銘柄コードを直接指定）
 # ══════════════════════════════════════════════════════════════
 def page_generate_all():
-    fig = new_page(FOOTER_LABEL, label="ツール1 / 4 ー 一括生成（おすすめ）",
+    fig = new_page(FOOTER_LABEL, label="ツール3 / 6 ー 一括生成（銘柄コードを直接指定）",
                     title="generate.py", insight="ダッシュボード(HTML)とレポート(PDF)を一度に自動生成する")
     gs = gs_content(fig, 1, 1, top=0.78, bottom=0.30)
 
@@ -192,7 +270,7 @@ def page_generate_all():
 # 4. ダッシュボード（単体）
 # ══════════════════════════════════════════════════════════════
 def page_dashboard():
-    fig = new_page(FOOTER_LABEL, label="ツール2 / 4 ー ダッシュボード（単体）",
+    fig = new_page(FOOTER_LABEL, label="ツール4 / 6 ー ダッシュボード（単体）",
                     title="generate_dashboard.py", insight="ブラウザで見る単一HTMLダッシュボード")
     gs = gs_content(fig, 1, 1, top=0.78, bottom=0.30)
 
@@ -227,7 +305,7 @@ def page_dashboard():
 # 4. レポート(PDF)
 # ══════════════════════════════════════════════════════════════
 def page_report():
-    fig = new_page(FOOTER_LABEL, label="ツール3 / 4 ー レポート（単体）",
+    fig = new_page(FOOTER_LABEL, label="ツール5 / 6 ー レポート（単体）",
                     title="generate_pdf.py", insight="印刷・保存・共有向けのA4横4ページPDF")
     gs = gs_content(fig, 1, 1, top=0.78, bottom=0.30)
 
@@ -261,7 +339,7 @@ def page_report():
 # 5. 複数銘柄比較
 # ══════════════════════════════════════════════════════════════
 def page_compare():
-    fig = new_page(FOOTER_LABEL, label="ツール4 / 4 ー 複数銘柄比較",
+    fig = new_page(FOOTER_LABEL, label="ツール6 / 6 ー 複数銘柄比較",
                     title="compare.py", insight="複数の証券コードを横並びで比較するHTMLダッシュボード")
     gs = gs_content(fig, 1, 1, top=0.78, bottom=0.30)
 
@@ -308,7 +386,8 @@ def page_appendix():
         "無配当・高成長株は簡易DDMの理論株価が",
         "  構造的に低く出やすい（手法上の限界）",
         "データソースはyfinanceのみ（v1）",
-        "対象は日本株のみ（米国株は未対応）",
+        "米国ETF等は損益計算書データがなく、",
+        "  ファンダメンタルズ分析ページが空欄になる",
     ], fontsize=10.5)
 
     ax2 = fig.add_subplot(gs[0, 1])
@@ -316,8 +395,7 @@ def page_appendix():
     ax2.axis("off")
     ax2.set_title("今後の拡張候補", fontsize=11.5, fontweight="bold", color=TEXT, pad=10, loc="left")
     bullet_block(fig, 0.535, 0.685, [
-        "ウォッチリスト・定期実行",
-        "米国株対応",
+        "holdings.csvの定期実行（cron等）",
         "アラート通知（決算・株価急変等）",
         "J-Quants APIへの移行（データ精度向上）",
     ], fontsize=10.5)
@@ -334,8 +412,8 @@ def page_appendix():
 
 def build():
     pdf_report._reset_page_num()
-    pages = [page_cover(), page_common(), page_generate_all(), page_dashboard(), page_report(),
-             page_compare(), page_appendix()]
+    pages = [page_cover(), page_common(), page_holdings(), page_matrix_report(), page_generate_all(),
+             page_dashboard(), page_report(), page_compare(), page_appendix()]
 
     a4w, a4h = int(297 * 150 / 25.4), int(210 * 150 / 25.4)
     imgs = []
